@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Settings Display</title>
+    <base target="_top">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .category-title {
+            font-size: 24px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        th, td {
+            padding: 5px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #d3d3d3; /* Light gray color */
+            color: black; /* Black text color for better contrast on light gray */
+            font-size: 18px;
+        }
+        td {
+            font-size: 16px;
+        }
+        .type-cell {
+            width: 20%; /* Adjusted width */
+        }
+        .description-cell {
+            width: 30%; /* Adjusted width for balance */
+        }
+        .button-cell {
+            width: 5%; /* Adjusted width */
+            text-align: center;
+        }
+        .button-cell button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            margin-bottom: 5px;
+        }
+        input[type="text"] {
+            width: calc(100% - 24px);
+            padding: 5px;
+            margin: 5px 0;
+            box-sizing: border-box;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+        }
+        .current-info-cell {
+            width: 20%; /* New width for the current information column */
+        }
+        
+        /* Button styles */
+        .set-button {
+            background-color: #90ee90; /* Light green */
+            /* Other styles */
+        }
+
+        .set-button:hover {
+            background-color: #76c376; /* Darker shade of light green for hover */
+        }
+
+        .update-button {
+            background-color: #ffeb3b; /* Yellow */
+            /* Other styles */
+        }
+
+        .update-button:hover {
+            background-color: #e0c32e; /* Darker shade of yellow for hover */
+        }
+
+        .delete-button {
+            background-color: #f44336; /* Red */
+            /* Other styles */
+        }
+
+        .delete-button:hover {
+            background-color: #cc372c; /* Darker shade of red for hover */
+        }
+    </style>
+</head>
+<body>
+    <div class="category-title">Google Slides and Spreadsheet Settings</div>
+    <table>
+        <tr>
+            <th>Type</th>
+            <th>Description</th>
+            <th>Current Information</th>
+            <th>Action</th>
+        </tr>
+        <tr>
+            <td class="type-cell">Google Slide URL</td>
+            <td class="description-cell">Enter the URL of the Google Slide to be used.</td>
+            <td class="current-info-cell">
+              <input type="text" id="slideUrl" placeholder="Enter Slide URL">
+            </td>
+            <td class="button-cell">
+                <button id="slideUrlButton" onclick="setSlideUrl()">Set</button>
+            </td>
+
+        </tr>
+        <tr>
+            <td class="type-cell">Index Sheet Name</td>
+            <td class="description-cell">Enter the name of the Index Sheet in your Google Spreadsheet.</td>
+            <td class="current-info-cell">
+              <input type="text" id="indexSheetName" placeholder="Enter Index Sheet Name">
+            </td>
+            <td class="button-cell">
+                <button id="indexSheetNameButton" onclick="setIndexSheetName()">Set</button>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Input fields for updating the URL and Sheet Name -->
+    <div id="updatePanel" style="display:none;">
+        <input type="text" id="slideUrl" placeholder="Enter Slide URL">
+        <input type="text" id="indexSheetName" placeholder="Enter Index Sheet Name">
+    </div>
+
+
+    <script>
+        window.onload = function() {
+            google.script.run.withSuccessHandler(updateSlideUrlField).getSlideUrl();
+            google.script.run.withSuccessHandler(updateIndexSheetNameField).getIndexSheetName();
+        };
+
+        function updateSlideUrlField(slideUrl) {
+            var slideUrlField = document.getElementById('slideUrl');
+            var slideUrlButton = document.getElementById('slideUrlButton');
+            updateButton(slideUrlField, slideUrlButton, slideUrl, 'SLIDE_URL');
+        }
+
+        function updateIndexSheetNameField(indexSheet) {
+            var indexSheetNameField = document.getElementById('indexSheetName');
+            var indexSheetNameButton = document.getElementById('indexSheetNameButton');
+            updateButton(indexSheetNameField, indexSheetNameButton, indexSheet, 'INDEX_SHEET');
+        }
+
+        function updateButton(field, button, value, propertyName) {
+            if (value) {
+              if(propertyName === 'INDEX_SHEET'){
+                nameData = JSON.parse(value).name;
+                field.value = nameData;
+              } else {
+                field.value = value;
+              }
+                button.textContent = 'Update';
+                button.classList.remove('set-button', 'delete-button');
+                button.classList.add('update-button');
+                button.onclick = function() {
+                    // Call update function
+                    if(propertyName === 'SLIDE_URL') {
+                        setSlideUrl();
+                    } else {
+                        setIndexSheet();
+                    }
+                };
+                addDeleteButtonIfNeeded(button, propertyName);
+            } else {
+                button.textContent = 'Set';
+                button.classList.remove('update-button', 'delete-button');
+                button.classList.add('set-button');
+                button.onclick = function() {
+                    // Call set function
+                    if(propertyName === 'SLIDE_URL') {
+                        setSlideUrl();
+                    } else {
+                        setIndexSheet();
+                    }
+                };
+                // Ensure delete button is removed if it exists
+                var deleteButton = button.parentNode.querySelector('.delete-button');
+                if (deleteButton) {
+                    button.parentNode.removeChild(deleteButton);
+                }
+            }
+        }
+
+        function addDeleteButtonIfNeeded(button, propertyName) {
+            // Check if delete button already exists
+            var deleteButton = button.parentNode.querySelector('.delete-button');
+            if (!deleteButton) {
+                // Create delete button if it doesn't exist
+                deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.classList.add('delete-button');
+                deleteButton.onclick = function() {
+                    // Call delete function
+                    google.script.run.withSuccessHandler(closeDialog).withFailureHandler(function(error) {
+                        alert('Error: ' + error.message);
+                    }).deleteProperty(propertyName);
+                };
+                button.parentNode.appendChild(deleteButton);
+            }
+        }
+
+        function setSlideUrl() {
+            var url = document.getElementById('slideUrl').value;
+            google.script.run.withSuccessHandler(closeDialog).withFailureHandler(function(error) {
+                alert('Error: ' + error.message);
+            }).setSlideUrl(url);
+        }
+
+        function setIndexSheet() {
+            var name = document.getElementById('indexSheetName').value;
+            google.script.run.withSuccessHandler(closeDialog).withFailureHandler(function(error) {
+                alert('Error: ' + error.message);
+            }).setIndexSheet(name);
+        }
+
+        function closeDialog() {
+            google.script.host.close();
+        }
+    </script>
+</body>
+</html>
