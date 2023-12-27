@@ -1,4 +1,4 @@
 # Site settings
 theme: jekyll-theme-primer
-title: 'Sampoe'
-description: 'This project XXX.'
+title: 'Automation of Manual List Creation'
+description: 'This project seamlessly integrate Google Sheets and Slides and can be efficiently used for listing work manual.'

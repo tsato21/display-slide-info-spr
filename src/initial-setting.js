@@ -48,113 +48,66 @@ function accessSettingModal() {
 }
 
 /**
- * Retrieves the stored URL of the Google Slide from script properties.
- * @return {string} The URL of the Google Slide.
+ * Retrieves the stored settings for the Google Slide URL and the name of the Index Sheet.
+ * @return {Object} An object containing the slide URL and index sheet name.
  */
-function getSlideUrl() {
-  return SCRIPTPROPERTIES.getProperty(SCRIPT_PROPERTY_KEY_SLIDE_URL);
+function getSettings() {
+  return {
+    slideUrl: SCRIPTPROPERTIES.getProperty(SCRIPT_PROPERTY_KEY_SLIDE_URL),
+    indexSheetName: JSON.parse(SCRIPTPROPERTIES.getProperty(SCRIPT_PROPERTY_KEY_INDEX_SHEET) || '{}').name
+  };
 }
 
 /**
- * Retrieves the stored name of the Index Sheet from script properties.
- * @return {string} The name of the Index Sheet.
+ * Sets the settings for the Google Slide URL and the Index Sheet name.
+ * Verifies the existence of the provided Google Slide URL and the Index Sheet.
+ * If either is not valid, throws an error.
+ * Updates the script properties with the provided values.
+ * @param {string} slideUrl - The URL of the Google Slide.
+ * @param {string} indexSheetName - The name of the Index Sheet in the Google Spreadsheet.
+ * @throws {Error} If the slide URL is not provided, not valid, or does not exist.
+ * @throws {Error} If the index sheet name is not provided or the sheet does not exist.
  */
-function getIndexSheetName() {
-  return SCRIPTPROPERTIES.getProperty(SCRIPT_PROPERTY_KEY_INDEX_SHEET);
-}
-
-/**
- * Sets the URL of the Google Slide in script properties.
- * Verifies the URL before setting and shows a message if the URL is invalid.
- * @param {string} url - The URL of the Google Slide to be set.
- */
-function setSlideUrl(url) {
-  try {
-    // Attempt to open the Google Slide to verify the URL
-    SlidesApp.openByUrl(url);
-    
-    SCRIPTPROPERTIES.setProperty(SCRIPT_PROPERTY_KEY_SLIDE_URL, url);
-
-    console.log('URL set successfully.');
-
-    checkNextStep_(`Slide URL`,`set`);
-  } catch (e) {
-    Browser.msgBox('Invalid Google Slide URL. Try again.');
-    console.log('Error: Invalid Google Slide URL.');
-    accessSettingModal();
-  }
-}
-
-/**
- * Sets the name of the Index Sheet in script properties.
- * Verifies the existence of the sheet before setting and shows a message if the sheet does not exist.
- * @param {string} name - The name of the Index Sheet to be set.
- */
-function setIndexSheet(name) {
-  try {
-    let sheet = SPREADSHEET.getSheetByName(name);
-    
-    if (sheet) {
-      let sheetId = sheet.getSheetId();
-      var sheetUrl = "https://docs.google.com/spreadsheets/d/" + SPREADSHEET_ID + "/edit#gid=" + sheetId;
-      let indexSheetData = {
-        name: name,
-        url: sheetUrl
-      };
-      // Serialize indexSheetData to a JSON string before storing
-      SCRIPTPROPERTIES.setProperty(SCRIPT_PROPERTY_KEY_INDEX_SHEET, JSON.stringify(indexSheetData));
-      
-      // Assuming checkNextStep_ is a function you've defined elsewhere
-      checkNextStep_('Index Sheet Name', 'set');
-    } else {
-      console.log('Error: Sheet not present.');
-      Browser.msgBox('The sheet ' + name + ' does not exist in this Google Spreadsheet. Try again.');
-      accessSettingModal(); // Assuming this is a function to reopen the modal
+function setSettings(slideUrl, indexSheetName) {
+  let sheet;
+  if (slideUrl) {
+    if(!SlidesApp.openByUrl(slideUrl)){
+      throw new Error(`URL not exits`);
     }
-  } catch (e) {
-    console.log('Error: Unable to access the spreadsheet.');
-    Browser.msgBox('Unable to access the spreadsheet. Try again.');
-    accessSettingModal(); // Assuming this is a function to reopen the modal
+  } else {
+    throw new Error(`URL not input`);
   }
-}
 
-/**
- * Deletes a specified property from the script properties.
- * @param {string} propertyName - The name of the property to be deleted.
- */
-function deleteProperty(propertyName) {
-  SCRIPTPROPERTIES.deleteProperty(propertyName);
-  let setTypeName = toTitleCase_(propertyName);
-  checkNextStep_(setTypeName,`deleted`); 
-}
-
-/**
- * Checks the next step after a setting has been successfully set or deleted.
- * Prompts the user to conduct another setting if desired.
- * @param {string} setTypeName - The type of setting that was processed.
- * @param {string} executionType - The type of execution performed ('set' or 'deleted').
- */
-function checkNextStep_(setTypeName,executionType){
-  let checkNextStep = Browser.msgBox(`${setTypeName} was successfully ${executionType}. Do you want to conduct another setting?`,Browser.Buttons.YES_NO);
-  if(checkNextStep === 'yes'){
-    accessSettingModal();
+  if (indexSheetName) {
+    sheet = SPREADSHEET.getSheetByName(indexSheetName);
+    if (!sheet) {
+        throw new Error(`Sheet with the name not exits`);
+    }
+  } else {
+    throw new Error(`Index Sheet Name not input`);
   }
+  SCRIPTPROPERTIES.setProperty(SCRIPT_PROPERTY_KEY_SLIDE_URL, slideUrl);
+  let sheetId = sheet.getSheetId();
+  let spreadsheetUrl = SPREADSHEET.getUrl();
+  let spreadSheetId = extractIDFromUrl_(spreadsheetUrl);
+  let sheetUrl = `https://docs.google.com/spreadsheets/d/${spreadSheetId}/edit#gid=${sheetId}`;
+  let indexSheetData = { name: indexSheetName, url: sheetUrl };
+  SCRIPTPROPERTIES.setProperty(SCRIPT_PROPERTY_KEY_INDEX_SHEET, JSON.stringify(indexSheetData));
+
+  Browser.msgBox(`Settings were completed.`);
 }
 
 /**
- * Converts a string from snake_case to Title Case.
- * @param {string} str - The string to be converted.
- * @return {string} The converted string in Title Case.
+ * Deletes the stored settings for the Google Slide URL and the Index Sheet name.
  */
-function toTitleCase_(str) {
-  return str
-    // First, replace underscores with spaces
-    .replace(/_/g, ' ')
-    // Split the string at each space, then transform to title case
-    .split(' ')
-    // Convert to title case by capitalizing the first letter of each word
-    .map(word => word.charAt(0) + word.slice(1).toLowerCase())
-    .join(' ');
+function deleteSettings() {
+  const properties = PropertiesService.getScriptProperties();
+  properties.deleteProperty(SCRIPT_PROPERTY_KEY_SLIDE_URL);
+  properties.deleteProperty(SCRIPT_PROPERTY_KEY_INDEX_SHEET);
+
+  // Logging for debugging purposes
+  console.log('Settings have been deleted.');
+  Browser.msgBox('Settings have been deleted.');
 }
 
 /**

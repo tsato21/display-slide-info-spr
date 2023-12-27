@@ -5,7 +5,7 @@
  */
 function updateIndexAndTaskSheets(){
   deleteAllTaskSheets_();
-  updateTaskSheets_();
+  updateTaskSheets();
   updateIndexSheet_();
   Browser.msgBox(`Index Sheet and Task Sheets have been updated.`);
 }
@@ -15,14 +15,22 @@ function updateIndexAndTaskSheets(){
  */
 function deleteAllTaskSheets_(){
   let sheets = SPREADSHEET.getSheets();
-  let indexShName = JSON.parse(ScriptProperties.getProperty(SCRIPT_PROPERTY_KEY_INDEX_SHEET)).name;
-  for(sheet of sheets){
-    let sheetName = sheet.getName();
-    if(sheetName === indexShName){
-      continue;
+  let indexSh = JSON.parse(ScriptProperties.getProperty(SCRIPT_PROPERTY_KEY_INDEX_SHEET));
+  if(indexSh){
+    let indexShName = indexSh.name;
+    for(sheet of sheets){
+      let sheetName = sheet.getName();
+      if(sheetName === indexShName){
+        continue;
+      }
+      SPREADSHEET.deleteSheet(sheet);
     }
-    SPREADSHEET.deleteSheet(sheet);
+  } else {
+    for (i=1;i<sheets.length;i++){
+      SPREADSHEET.deleteSheet(sheet[i]);
+    }
   }
+
 }
 
 /**
@@ -34,6 +42,7 @@ function deleteAllTaskSheets_(){
  */
 function updateIndexSheet_() {
   let indexShName = JSON.parse(SCRIPTPROPERTIES.getProperty(SCRIPT_PROPERTY_KEY_INDEX_SHEET)).name;
+  let indexShUrl = JSON.parse(SCRIPTPROPERTIES.getProperty(SCRIPT_PROPERTY_KEY_INDEX_SHEET)).url;
   let indexSheet = SPREADSHEET.getSheetByName(indexShName);
   indexSheet.clear();
   let lastColNum = indexSheet.getMaxColumns();
@@ -117,7 +126,7 @@ function fetchTaskSheetsData_() {
  * extracted from each slide, and the data is then used to create or update
  * task sheets in the Google Sheets spreadsheet.
  */
-function updateTaskSheets_() {
+function updateTaskSheets() {
     let startTime = new Date().getTime(); // Record the start time of the script
     let maxExecutionTime = 300000; // Set the maximum execution time to 5 minutes (300000 ms)
 
@@ -140,8 +149,7 @@ function updateTaskSheets_() {
     let startingIndex = currentDetails.lastSlideIndex + 1;
     console.log(`startingIndex is ${startingIndex}`);
 
-    //The workPattern regular expression checks for "Category:" followed by any characters and accounts for optional spaces.
-    let workPattern = /Category:\s*【.*】\s*.+/;
+    let pattern = /Category:\s*【(.*?)】\s*(.*?)Task:\s*(.*?)Summary:\s*(.*)/;
 
     for (let i = startingIndex; i < slides.length; i++) {
         // Simulate a delay to test the timeout functionality
@@ -158,7 +166,7 @@ function updateTaskSheets_() {
             SCRIPTPROPERTIES().setProperty(SCRIPT_PROPERTY_KEY_SAVED_DETAILS, JSON.stringify(allDetails));
             // Log timeout and set a trigger for a new execution
             console.log(`Time out detected in Slide ${i + 1}, saving current details and setting a trigger.`);
-            ScriptApp.newTrigger('organizeTaskSheet')
+            ScriptApp.newTrigger('updateTaskSheets')
                      .timeBased()
                      .after(10000) // Set the trigger to run 10 seconds after the current execution ends
                      .create();
@@ -167,25 +175,42 @@ function updateTaskSheets_() {
         let slide = slides[i];
         let shapes = slide.getShapes();
         let entireSlideText = shapes.map(shape => shape.getText().asString().trim()).join(" ");
+        let match = entireSlideText.match(pattern);
 
         // Check if the entire slide text matches the "Category:" pattern
-        if (workPattern.test(entireSlideText)) {
+        if (match) {
             console.log(`Slide ${i + 1} is subject for extraction.`);
-            let slideDetails = extractSlideDetails_(shapes, presentation, slide);
-            if (!validateSlideDetails_(slideDetails, i + 1)) {
-                return;
+            let slideUrl = presentation.getUrl() + '#slide=id.' + slide.getObjectId()
+            let slideDetails = extractSlideDetails_(match,slideUrl);
+
+            // Check if the work category or sub-category has changed in the current slide
+            if (slideDetails.workCategory !== currentDetails.workCategory || slideDetails.subWorkCategory !== currentDetails.subWorkCategory) {
+              /*
+              If the category or sub-category has changed, it means we've moved to a new category or sub-category.
+              Therefore, push the currentDetails (which holds the accumulated data for the previous category or sub-category) to allDetails.
+              */
+              // Check if currentDetails has any tasks before pushing to allDetails
+              if (currentDetails.tasks.length > 0) {
+                  allDetails.push(currentDetails);
+              }
+
+              /*
+              Initialize currentDetails for the new category or sub-category.
+              This will start accumulating tasks for this new category or sub-category.
+              */
+              currentDetails = {
+                  workCategory: slideDetails.workCategory,        // Set the new work category
+                  subWorkCategory: slideDetails.subWorkCategory,  // Set the new sub-work category
+                  tasks: []                                      // Initialize an empty array for tasks
+              };
             }
 
-            if (slideDetails.workCategory !== currentDetails.workCategory || slideDetails.subWorkCategory !== currentDetails.subWorkCategory) {
-                if (currentDetails.workCategory) {
-                    allDetails.push(currentDetails);
-                }
-                currentDetails = {
-                    workCategory: slideDetails.workCategory,
-                    subWorkCategory: slideDetails.subWorkCategory,
-                    tasks: []
-                };
-            }
+            /*
+            Add the tasks from the current slide to the currentDetails.
+            This happens regardless of whether the category has changed or not.
+            If the category hasn't changed, we continue adding tasks to the current category.
+            If it has changed, we're adding the first task(s) of the new category.
+            */
             currentDetails.tasks.push(...slideDetails.tasks);
 
             // Debugging: Log the currentDetails after each slide is processed
@@ -198,86 +223,55 @@ function updateTaskSheets_() {
     //Check if all slides have been processed
     if (startingIndex < slides.length) {
       // Once we've finished processing all slides, push the final currentDetails to allDetails
-      if (currentDetails.workCategory) {
+      if (currentDetails.workCategory !== null) {
           allDetails.push(currentDetails);
+          console.log(`allDetails are ${JSON.stringify(allDetails)}`);
           inputSlidesInfoToSheet_(allDetails, SPREADSHEET);
           console.log(`allDetails are successfully input into Google Sheet: ${JSON.stringify(allDetails, null, 2)}`);
           // Clear the saved data after successfully processing all slides
           SCRIPTPROPERTIES.deleteProperty(SCRIPT_PROPERTY_KEY_SAVED_DETAILS);
       }
     }
+  return JSON.parse(SCRIPTPROPERTIES.getProperty(SCRIPT_PROPERTY_KEY_INDEX_SHEET)).url;
 }
 
 
 /**
- * Extracts the slide details such as work category, sub-category, and tasks.
+ * Extracts slide details such as work category, sub-category, and tasks from a given text match.
+ * This function processes the matched text from a Google Slide and extracts relevant details
+ * to organize tasks into categories and sub-categories.
  *
- * @param {Array} shapes - The shapes from the slide to process.
- * @param {Object} presentation - The Google Slides presentation object.
- * @param {Object} slide - The current slide object.
- * @return {Object} The extracted slide details.
+ * @param {Array} match - An array containing matched strings from a regular expression, where:
+ *                        match[1] is the work category,
+ *                        match[2] is the sub-work category,
+ *                        match[3] is the task name,
+ *                        match[4] is the task summary.
+ * @param {string} slideUrl - The URL of the slide from which the details are extracted.
+ * @return {Object} An object containing the extracted slide details, including:
+ *                  - workCategory: The category of the work extracted from the slide.
+ *                  - subWorkCategory: The sub-category of the work extracted from the slide.
+ *                  - tasks: An array of task objects, each with name, summary, and URL of the slide.
  */
-function extractSlideDetails_(shapes, presentation, slide) {
+function extractSlideDetails_(match,slideUrl) {
     let slideDetails = {
         workCategory: null,
         subWorkCategory: null,
         tasks: []
     };
-    let currentTask = {};
 
-    for (let shape of shapes) {
-        let text = shape.getText().asString().trim();
-
-        //The workPattern regular expression checks for "Category:" followed by any characters and accounts for optional spaces.
-        let workPattern = /Category:\s*【.*】\s*.+/;
-        // The taskPattern regular expression checks for "Task:" followed by any characters and also accounts for optional spaces.
-        let taskPattern = /Task:\s*.+/;
-
-
-        //The .test() method is used to check if the text matches the specified pattern.
-        //The split and replace methods are used to extract the necessary parts from the matched strings.
-        if (workPattern.test(text)) {
-            let strippedText = text.replace("Category:", "").trim();
-            let parts = strippedText.split("】");
-            slideDetails.workCategory = parts[0].replace("【", "").trim();
-            slideDetails.subWorkCategory = parts.length > 1 ? parts[1].trim() : null;
-        } else if (taskPattern.test(text)) {
-            currentTask.name = text.replace("Task:", "").trim();
-            currentTask.url = presentation.getUrl() + '#slide=id.' + slide.getObjectId();
-        } else if (text.startsWith("Summary: ")) {
-          //For the "Summary:" section, it's ensured that a task is only added if it has a name (to avoid adding incomplete tasks).
-            currentTask.summary = text.replace("Summary: ", "").trim();
-            if (currentTask.name) {
-                slideDetails.tasks.push(currentTask);
-            }
-            currentTask = {};
-        }
+    if (match) {
+        slideDetails.workCategory = match[1].trim();
+        slideDetails.subWorkCategory = match[2].trim();
+        let currentTask = {
+            name: match[3].trim(),
+            summary: match[4].trim(),
+            url: slideUrl
+        };
+        slideDetails.tasks.push(currentTask);
     }
+
     return slideDetails;
 }
-
-/**
- * Validates the structure of slide details to ensure all necessary information is present.
- *
- * @param {Object} slideDetails - The details extracted from a slide.
- * @param {number} slideNumber - The slide number for reference in case of an error.
- * @return {boolean} True if validation is successful, false otherwise.
- */
-function validateSlideDetails_(slideDetails, slideNumber) {
-    // Check for the presence of required fields in slide details
-    if (!slideDetails.workCategory || !slideDetails.subWorkCategory) {
-        Logger.log(`Slide ${slideNumber}: Please restructure the target slide content. WorkCategory or subWorkCategory is missing.`);
-        return false;
-    }
-    for (let task of slideDetails.tasks) {
-        if (!task.name || !task.url || !task.summary) {
-            Logger.log(`Slide ${slideNumber}: Task details are incomplete. Please restructure the target slide content.`);
-            return false;
-        }
-    }
-    return true;
-}
-
 
 /**
  * Inputs the organized slide information into the designated Google Sheet.
@@ -289,14 +283,9 @@ function inputSlidesInfoToSheet_(allDetails, SPREADSHEET) {
     // Loop through each detail object and add to the spreadsheet
     for (let detail of allDetails) {
         let sheetName = `${detail.workCategory}: ${detail.subWorkCategory}`;
-        // Check if the sheet exists, if not, create a new one
-        let sheet = SPREADSHEET.getSheetByName(sheetName);
-        if (!sheet) {
-            sheet = SPREADSHEET.insertSheet(sheetName, SPREADSHEET.getNumSheets() + 1);
-        }
+        console.log(`detail in inputSlidesInfoToSheet_ is ${JSON.stringify(detail)}`);
 
-        // Clear the contents of the sheet to prepare for new data
-        sheet.clear();
+        sheet = SPREADSHEET.insertSheet(sheetName, SPREADSHEET.getNumSheets() + 1);
 
         // Log the details for debugging
         console.log(`Following details will be input into Google Sheet: ${JSON.stringify(detail, null, 2)}`);

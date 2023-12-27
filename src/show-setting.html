@@ -43,11 +43,7 @@
         .description-cell {
             width: 30%; /* Adjusted width for balance */
         }
-        .button-cell {
-            width: 5%; /* Adjusted width */
-            text-align: center;
-        }
-        .button-cell button {
+        button {
             padding: 10px 20px;
             border: none;
             border-radius: 4px;
@@ -105,126 +101,79 @@
             <th>Type</th>
             <th>Description</th>
             <th>Current Information</th>
-            <th>Action</th>
         </tr>
         <tr>
             <td class="type-cell">Google Slide URL</td>
             <td class="description-cell">Enter the URL of the Google Slide to be used.</td>
             <td class="current-info-cell">
-              <input type="text" id="slideUrl" placeholder="Enter Slide URL">
+                <input type="text" id="slideUrl" placeholder="Enter Slide URL">
             </td>
-            <td class="button-cell">
-                <button id="slideUrlButton" onclick="setSlideUrl()">Set</button>
-            </td>
-
         </tr>
         <tr>
             <td class="type-cell">Index Sheet Name</td>
             <td class="description-cell">Enter the name of the Index Sheet in your Google Spreadsheet.</td>
             <td class="current-info-cell">
-              <input type="text" id="indexSheetName" placeholder="Enter Index Sheet Name">
-            </td>
-            <td class="button-cell">
-                <button id="indexSheetNameButton" onclick="setIndexSheetName()">Set</button>
+                <input type="text" id="indexSheetName" placeholder="Enter Index Sheet Name">
             </td>
         </tr>
     </table>
 
-    <!-- Input fields for updating the URL and Sheet Name -->
-    <div id="updatePanel" style="display:none;">
-        <input type="text" id="slideUrl" placeholder="Enter Slide URL">
-        <input type="text" id="indexSheetName" placeholder="Enter Index Sheet Name">
+    <!-- Single button for settings, aligned to the left -->
+    <div style="text-align: right; margin-top: 10px;">
+        <button id="applySettingsButton" onclick="applySettings()"></button>
+        <button id="deleteSettingsButton" class="delete-button" style="display: none;" onclick="deleteSettings()">Delete</button>
     </div>
-
 
     <script>
         window.onload = function() {
-            google.script.run.withSuccessHandler(updateSlideUrlField).getSlideUrl();
-            google.script.run.withSuccessHandler(updateIndexSheetNameField).getIndexSheetName();
+            google.script.run.withSuccessHandler(initializeFields).getSettings();
         };
 
-        function updateSlideUrlField(slideUrl) {
-            var slideUrlField = document.getElementById('slideUrl');
-            var slideUrlButton = document.getElementById('slideUrlButton');
-            updateButton(slideUrlField, slideUrlButton, slideUrl, 'SLIDE_URL');
+        function initializeFields(settings) {
+            // ... Existing code for initializeFields ...
+            updateDeleteButtonVisibility(settings.slideUrl, settings.indexSheetName);
+            updateInputAndButton(settings.slideUrl, settings.indexSheetName);
         }
 
-        function updateIndexSheetNameField(indexSheet) {
-            var indexSheetNameField = document.getElementById('indexSheetName');
-            var indexSheetNameButton = document.getElementById('indexSheetNameButton');
-            updateButton(indexSheetNameField, indexSheetNameButton, indexSheet, 'INDEX_SHEET');
-        }
+        function updateInputAndButton(slideUrl, indexSheetName) {
+            const button = document.getElementById('applySettingsButton');
+            const slideInput = document.getElementById('slideUrl');
+            const indexShNameInput = document.getElementById('indexSheetName');
 
-        function updateButton(field, button, value, propertyName) {
-            if (value) {
-              if(propertyName === 'INDEX_SHEET'){
-                nameData = JSON.parse(value).name;
-                field.value = nameData;
-              } else {
-                field.value = value;
-              }
-                button.textContent = 'Update';
-                button.classList.remove('set-button', 'delete-button');
-                button.classList.add('update-button');
-                button.onclick = function() {
-                    // Call update function
-                    if(propertyName === 'SLIDE_URL') {
-                        setSlideUrl();
-                    } else {
-                        setIndexSheet();
-                    }
-                };
-                addDeleteButtonIfNeeded(button, propertyName);
+            if (slideUrl && indexSheetName) {
+                button.textContent = 'Update Settings';
+                button.className = 'update-button';
+                slideInput.value = slideUrl;
+                indexShNameInput.value = indexSheetName
             } else {
-                button.textContent = 'Set';
-                button.classList.remove('update-button', 'delete-button');
-                button.classList.add('set-button');
-                button.onclick = function() {
-                    // Call set function
-                    if(propertyName === 'SLIDE_URL') {
-                        setSlideUrl();
-                    } else {
-                        setIndexSheet();
-                    }
-                };
-                // Ensure delete button is removed if it exists
-                var deleteButton = button.parentNode.querySelector('.delete-button');
-                if (deleteButton) {
-                    button.parentNode.removeChild(deleteButton);
-                }
+                button.textContent = 'Set Settings';
+                button.className = 'set-button';
             }
         }
 
-        function addDeleteButtonIfNeeded(button, propertyName) {
-            // Check if delete button already exists
-            var deleteButton = button.parentNode.querySelector('.delete-button');
-            if (!deleteButton) {
-                // Create delete button if it doesn't exist
-                deleteButton = document.createElement('button');
-                deleteButton.textContent = 'Delete';
-                deleteButton.classList.add('delete-button');
-                deleteButton.onclick = function() {
-                    // Call delete function
-                    google.script.run.withSuccessHandler(closeDialog).withFailureHandler(function(error) {
-                        alert('Error: ' + error.message);
-                    }).deleteProperty(propertyName);
-                };
-                button.parentNode.appendChild(deleteButton);
+        function updateDeleteButtonVisibility(slideUrl, indexSheetName) {
+            const deleteButton = document.getElementById('deleteSettingsButton');
+            if (slideUrl && indexSheetName) {
+                deleteButton.style.display = 'inline-block';
+            } else {
+                deleteButton.style.display = 'none';
             }
         }
 
-        function setSlideUrl() {
-            var url = document.getElementById('slideUrl').value;
+        function deleteSettings() {
             google.script.run.withSuccessHandler(closeDialog).withFailureHandler(function(error) {
                 alert('Error: ' + error.message);
-            }).setSlideUrl(url);
+            })
+            .deleteSettings();
         }
 
-        function setIndexSheet() {
-            var name = document.getElementById('indexSheetName').value;
-            google.script.run.withSuccessHandler(closeDialog).withFailureHandler(function(error) {
-                alert('Error: ' + error.message);
-            }).setIndexSheet(name);
+        function applySettings() {
+            const slideUrl = document.getElementById('slideUrl').value;
+            const indexSheetName = document.getElementById('indexSheetName').value;
+            google.script.run.withSuccessHandler(closeDialog)
+                             .withFailureHandler(function(error) {
+                                alert('Error: ' + error.message);
+                             }).setSettings(slideUrl, indexSheetName);
         }
 
         function closeDialog() {
