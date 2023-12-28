@@ -20,6 +20,35 @@ body {
   }
 }
 
+/* Additional responsive styles for smaller smartphones */
+@media screen and (max-width: 576px) {
+  .sidebar {
+    display: none; /* Hides the sidebar for smaller devices */
+  }
+
+  .content, .header, .footer {
+    margin-left: 0;
+    padding: 10px; /* Adds padding for better readability */
+  }
+
+  /* Adjust text size for better readability on small screens */
+  body {
+    font-size: 14px;
+  }
+
+  /* Adjust header size for small screens */
+  header h1 {
+    font-size: 22px;
+  }
+
+  /* Adjust the table of contents list items for smaller screens */
+  #table-of-contents ul {
+    padding-left: 20px; /* Adds padding to the list */
+  }
+
+  /* Other specific adjustments can be added here */
+}
+
 a {
   color: blue;
   text-decoration: none;
