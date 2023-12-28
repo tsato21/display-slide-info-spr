@@ -36,14 +36,14 @@ a {
   top: 0;
   bottom: 0;
   left: 0;
-  width: 150px;
+  width: 230px;
   background-color: #f8f9fa;
   padding: 10px;
   box-sizing: border-box;
 }
 
 .content {
-  margin-left: 260px;
+  margin-left: 100px;
   padding: 1rem;
 }
 
