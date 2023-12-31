@@ -217,6 +217,11 @@ function inputSlidesInfoToSheet_(allDetails, SPREADSHEET) {
     }
 }
 
+/**
+ * Deletes all triggers associated with a specific function in the Google Apps Script project.
+ *
+ * @param {string} functionName - The name of the function for which to delete the triggers.
+ */
 function deleteSpecificTrigger_(functionName) {
   var allTriggers = ScriptApp.getProjectTriggers();
   
