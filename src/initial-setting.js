@@ -106,7 +106,7 @@ function deleteSettings() {
   properties.deleteProperty(SCRIPT_PROPERTY_KEY_INDEX_SHEET);
 
   // Logging for debugging purposes
-  console.log('Settings have been deleted.');
+  // console.log('Settings have been deleted.');
   Browser.msgBox('Settings have been deleted.');
 }
 

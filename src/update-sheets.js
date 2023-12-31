@@ -3,130 +3,7 @@
  * all existing task sheets and recreating them based on the latest data from
  * Google Slides, and then updating the index sheet to reflect these changes.
  */
-function updateIndexAndTaskSheets(){
-  deleteAllTaskSheets_();
-  updateTaskSheets();
-  updateIndexSheet_();
-  Browser.msgBox(`Index Sheet and Task Sheets have been updated.`);
-}
-
-/**
- * Deletes all sheets in the spreadsheet except for the index sheet.
- */
-function deleteAllTaskSheets_(){
-  let sheets = SPREADSHEET.getSheets();
-  let indexSh = JSON.parse(ScriptProperties.getProperty(SCRIPT_PROPERTY_KEY_INDEX_SHEET));
-  if(indexSh){
-    let indexShName = indexSh.name;
-    for(sheet of sheets){
-      let sheetName = sheet.getName();
-      if(sheetName === indexShName){
-        continue;
-      }
-      SPREADSHEET.deleteSheet(sheet);
-    }
-  } else {
-    for (i=1;i<sheets.length;i++){
-      SPREADSHEET.deleteSheet(sheet[i]);
-    }
-  }
-
-}
-
-/**
- * Updates the main index sheet with categories and tasks.
- * It applies formatting and inserts hyperlinks to the respective task sheets.
- * To avoid the 6-minute execution limit, this function is designed to be 
- * run incrementally, processing a limited number of categories per execution.
- * @param {string} indexSheetName - The name of the index sheet to update.
- */
-function updateIndexSheet_() {
-  let indexShName = JSON.parse(SCRIPTPROPERTIES.getProperty(SCRIPT_PROPERTY_KEY_INDEX_SHEET)).name;
-  let indexShUrl = JSON.parse(SCRIPTPROPERTIES.getProperty(SCRIPT_PROPERTY_KEY_INDEX_SHEET)).url;
-  let indexSheet = SPREADSHEET.getSheetByName(indexShName);
-  indexSheet.clear();
-  let lastColNum = indexSheet.getMaxColumns();
-  let taskShData = fetchTaskSheetsData_();
-  let needColNum = Object.keys(taskShData).length;
-
-  // Check if additional columns are needed
-  if (lastColNum < needColNum){
-    // Insert enough columns to meet the requirement
-    let columnsToInsert = needColNum - lastColNum;
-    indexSheet.insertColumnsAfter(lastColNum, columnsToInsert);
-    console.log(`${columnsToInsert} columns were inserted.`);
-  }
-
-  let currentCol = 1;
-
-  Object.keys(taskShData).forEach(category => {
-    let tasks = taskShData[category];
-    let updates = [[category]];
-    let hyperlinkUpdates = [];
-
-    tasks.forEach(taskInfo => {
-      updates.push([taskInfo.task]);
-      hyperlinkUpdates.push(['=HYPERLINK("' + taskInfo.url + '","' + taskInfo.task + '")']);
-    });
-
-    let range = indexSheet.getRange(1, currentCol, updates.length);
-    range.setValues(updates);
-    indexSheet.getRange(range.getRow() + 1, currentCol, hyperlinkUpdates.length).setFormulas(hyperlinkUpdates);
-
-    // Formatting 
-    indexSheet.getRange(1, currentCol).setBackground("#D3D3D3")
-                                        .setFontSize(16)
-                                        .setFontWeight("bold")
-                                        .setWrap(true);
-                                        
-    indexSheet.getRange(1, currentCol, updates.length).setBorder(true, true, true, true, true, true)
-                                                      .setHorizontalAlignment("center")
-                                                      .setVerticalAlignment("middle")
-                                                      .setWrap(true)
-
-    indexSheet.setColumnWidth(currentCol, 150);
-    
-    currentCol += 1; // Increment to the next category column
-  });
-
-  indexSheet.setTabColor("#FF8C00");
-}
-
-/**
- * Fetches task data from all visible sheets and organizes them by category.
- * Sheet names are expected to be formatted as "Category: Task".
- * @returns {Object} An object mapping categories to an array of task objects.
- */
-function fetchTaskSheetsData_() {
-  let allSheets = SPREADSHEET.getSheets();
-  let taskSheetData = {};
-
-  allSheets.forEach(sheet => {
-    if (!sheet.isSheetHidden()) {
-      let name = sheet.getName();
-      if (name.includes(":")) {
-        let [category, task] = name.split(":").map(part => part.trim());
-        let sheetGID = sheet.getSheetId();
-        let sheetURL = `${SPREADSHEET.getUrl()}#gid=${sheetGID}`;
-        let taskInfo = { task: task, url: sheetURL };
-
-        if (!taskSheetData[category]) {
-          taskSheetData[category] = [];
-        }
-        taskSheetData[category].push(taskInfo);
-      }
-    }
-  });
-
-  return taskSheetData;
-}
-
-/**
- * Organizes tasks from Google Slides into a Google Sheet. The tasks are
- * extracted from each slide, and the data is then used to create or update
- * task sheets in the Google Sheets spreadsheet.
- */
-function updateTaskSheets() {
+function updateIndexAndTaskSheets() {
     let startTime = new Date().getTime(); // Record the start time of the script
     let maxExecutionTime = 300000; // Set the maximum execution time to 5 minutes (300000 ms)
 
@@ -147,26 +24,26 @@ function updateTaskSheets() {
 
     // Determine the starting index based on the last processed slide
     let startingIndex = currentDetails.lastSlideIndex + 1;
-    console.log(`startingIndex is ${startingIndex}`);
+    // console.log(`startingIndex is ${startingIndex}`);
 
     let pattern = /Category:\s*【(.*?)】\s*(.*?)Task:\s*(.*?)Summary:\s*(.*)/;
 
     for (let i = startingIndex; i < slides.length; i++) {
         // Simulate a delay to test the timeout functionality
         // For example, sleep for 10 seconds
-        // Utilities.sleep(60000); // Sleep for 1 minutes
+        // Utilities.sleep(20000); // Sleep for 20 seconds to test
         // Check the elapsed time
         let currentTime = new Date().getTime();
-        let readableTime = new Date(currentTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-        console.log(`Current time is ${readableTime} in Slide ${i + 1}.`);
+        let readableTime = new Date(currentTime).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', hour12: false });
+        // console.log(`Current time is ${readableTime} in Slide ${i + 1}.`);
         if (currentTime - startTime >= maxExecutionTime) {
             // Save the current state and set a trigger if the script is approaching the time limit
             currentDetails.lastSlideIndex = i - 1; // Save the index of the last processed slide
             allDetails.push(currentDetails);
-            SCRIPTPROPERTIES().setProperty(SCRIPT_PROPERTY_KEY_SAVED_DETAILS, JSON.stringify(allDetails));
+            SCRIPTPROPERTIES.setProperty(SCRIPT_PROPERTY_KEY_SAVED_DETAILS, JSON.stringify(allDetails));
             // Log timeout and set a trigger for a new execution
             console.log(`Time out detected in Slide ${i + 1}, saving current details and setting a trigger.`);
-            ScriptApp.newTrigger('updateTaskSheets')
+            ScriptApp.newTrigger('updateIndexAndTaskSheets')
                      .timeBased()
                      .after(10000) // Set the trigger to run 10 seconds after the current execution ends
                      .create();
@@ -179,7 +56,7 @@ function updateTaskSheets() {
 
         // Check if the entire slide text matches the "Category:" pattern
         if (match) {
-            console.log(`Slide ${i + 1} is subject for extraction.`);
+            // console.log(`Slide ${i + 1} is subject for extraction.`);
             let slideUrl = presentation.getUrl() + '#slide=id.' + slide.getObjectId()
             let slideDetails = extractSlideDetails_(match,slideUrl);
 
@@ -214,27 +91,32 @@ function updateTaskSheets() {
             currentDetails.tasks.push(...slideDetails.tasks);
 
             // Debugging: Log the currentDetails after each slide is processed
-            console.log(`Slide ${i + 1}:`, JSON.stringify(currentDetails, null, 2));
+            // console.log(`Slide ${i + 1}:`, JSON.stringify(currentDetails, null, 2));
         } else {
-          console.log(`Slide ${i + 1} is NOT subject for extraction.`);
+          // console.log(`Slide ${i + 1} is NOT subject for extraction.`);
         }
     }
 
     //Check if all slides have been processed
     if (startingIndex < slides.length) {
+      //Before pushing currentDetails into allDetails, delete all task sheets of the Spreadsheet
+      deleteAllTaskSheets_();
+
       // Once we've finished processing all slides, push the final currentDetails to allDetails
       if (currentDetails.workCategory !== null) {
           allDetails.push(currentDetails);
-          console.log(`allDetails are ${JSON.stringify(allDetails)}`);
+          // console.log(`allDetails are ${JSON.stringify(allDetails)}`);
           inputSlidesInfoToSheet_(allDetails, SPREADSHEET);
-          console.log(`allDetails are successfully input into Google Sheet: ${JSON.stringify(allDetails, null, 2)}`);
+          // console.log(`allDetails are successfully input into Google Sheet: ${JSON.stringify(allDetails, null, 2)}`);
           // Clear the saved data after successfully processing all slides
           SCRIPTPROPERTIES.deleteProperty(SCRIPT_PROPERTY_KEY_SAVED_DETAILS);
+          // delete triggers to execute `updateIndexAndTaskSheets`
+          deleteSpecificTrigger_(`updateIndexAndTaskSheets`);
       }
     }
-  return JSON.parse(SCRIPTPROPERTIES.getProperty(SCRIPT_PROPERTY_KEY_INDEX_SHEET)).url;
+  updateIndexSheet_();
+  Browser.msgBox(`Index Sheet and Task Sheets have been updated.`);
 }
-
 
 /**
  * Extracts slide details such as work category, sub-category, and tasks from a given text match.
@@ -274,6 +156,29 @@ function extractSlideDetails_(match,slideUrl) {
 }
 
 /**
+ * Deletes all sheets in the spreadsheet except for the index sheet.
+ */
+function deleteAllTaskSheets_(){
+  let sheets = SPREADSHEET.getSheets();
+  let indexSh = JSON.parse(ScriptProperties.getProperty(SCRIPT_PROPERTY_KEY_INDEX_SHEET));
+  if(indexSh){
+    let indexShName = indexSh.name;
+    for(sheet of sheets){
+      let sheetName = sheet.getName();
+      if(sheetName === indexShName){
+        continue;
+      }
+      SPREADSHEET.deleteSheet(sheet);
+    }
+  } else {
+    for (i=1;i<sheets.length;i++){
+      SPREADSHEET.deleteSheet(sheet[i]);
+    }
+  }
+
+}
+
+/**
  * Inputs the organized slide information into the designated Google Sheet.
  *
  * @param {Array} allDetails - Array of objects containing the task details.
@@ -283,12 +188,12 @@ function inputSlidesInfoToSheet_(allDetails, SPREADSHEET) {
     // Loop through each detail object and add to the spreadsheet
     for (let detail of allDetails) {
         let sheetName = `${detail.workCategory}: ${detail.subWorkCategory}`;
-        console.log(`detail in inputSlidesInfoToSheet_ is ${JSON.stringify(detail)}`);
+        // console.log(`detail in inputSlidesInfoToSheet_ is ${JSON.stringify(detail)}`);
 
         sheet = SPREADSHEET.insertSheet(sheetName, SPREADSHEET.getNumSheets() + 1);
 
         // Log the details for debugging
-        console.log(`Following details will be input into Google Sheet: ${JSON.stringify(detail, null, 2)}`);
+        // console.log(`Following details will be input into Google Sheet: ${JSON.stringify(detail, null, 2)}`);
 
         // Start inserting data from the second row
         let startRow = 2;
@@ -310,6 +215,17 @@ function inputSlidesInfoToSheet_(allDetails, SPREADSHEET) {
         // Apply the formatting to the sheet
         setSheetFormat_(sheet, 2, [400, 600], ["Task", "Summary"], headerRange, dataRange, null, wrapRange, null, indexSheetUrl);
     }
+}
+
+function deleteSpecificTrigger_(functionName) {
+  var allTriggers = ScriptApp.getProjectTriggers();
+  
+  for (var i = 0; i < allTriggers.length; i++) {
+    if (allTriggers[i].getHandlerFunction() === functionName) {
+      // Delete the trigger if the function name matches
+      ScriptApp.deleteTrigger(allTriggers[i]);
+    }
+  }
 }
 
 /**
@@ -399,4 +315,91 @@ function setColumnsWidth_(sheet, startCol, columnWidths) {
     columnWidths.forEach((width, index) => {
         sheet.setColumnWidth(startCol + index, width);
     });
+}
+
+/**
+ * Updates the main index sheet with categories and tasks.
+ * It applies formatting and inserts hyperlinks to the respective task sheets.
+ * To avoid the 6-minute execution limit, this function is designed to be 
+ * run incrementally, processing a limited number of categories per execution.
+ * @param {string} indexSheetName - The name of the index sheet to update.
+ */
+function updateIndexSheet_() {
+  let indexShName = JSON.parse(SCRIPTPROPERTIES.getProperty(SCRIPT_PROPERTY_KEY_INDEX_SHEET)).name;
+  let indexSheet = SPREADSHEET.getSheetByName(indexShName);
+  indexSheet.clear();
+  let lastColNum = indexSheet.getMaxColumns();
+  let taskShData = fetchTaskSheetsData_();
+  let needColNum = Object.keys(taskShData).length;
+
+  // Check if additional columns are needed
+  if (lastColNum < needColNum){
+    // Insert enough columns to meet the requirement
+    let columnsToInsert = needColNum - lastColNum;
+    indexSheet.insertColumnsAfter(lastColNum, columnsToInsert);
+    // console.log(`${columnsToInsert} columns were inserted.`);
+  }
+
+  let currentCol = 1;
+
+  Object.keys(taskShData).forEach(category => {
+    let tasks = taskShData[category];
+    let updates = [[category]];
+    let hyperlinkUpdates = [];
+
+    tasks.forEach(taskInfo => {
+      updates.push([taskInfo.task]);
+      hyperlinkUpdates.push(['=HYPERLINK("' + taskInfo.url + '","' + taskInfo.task + '")']);
+    });
+
+    let range = indexSheet.getRange(1, currentCol, updates.length);
+    range.setValues(updates);
+    indexSheet.getRange(range.getRow() + 1, currentCol, hyperlinkUpdates.length).setFormulas(hyperlinkUpdates);
+
+    // Formatting 
+    indexSheet.getRange(1, currentCol).setBackground("#D3D3D3")
+                                        .setFontSize(16)
+                                        .setFontWeight("bold")
+                                        .setWrap(true);
+                                        
+    indexSheet.getRange(1, currentCol, updates.length).setBorder(true, true, true, true, true, true)
+                                                      .setHorizontalAlignment("center")
+                                                      .setVerticalAlignment("middle")
+                                                      .setWrap(true)
+
+    indexSheet.setColumnWidth(currentCol, 150);
+    
+    currentCol += 1; // Increment to the next category column
+  });
+
+  indexSheet.setTabColor("#FF8C00");
+}
+
+/**
+ * Fetches task data from all visible sheets and organizes them by category.
+ * Sheet names are expected to be formatted as "Category: Task".
+ * @returns {Object} An object mapping categories to an array of task objects.
+ */
+function fetchTaskSheetsData_() {
+  let allSheets = SPREADSHEET.getSheets();
+  let taskSheetData = {};
+
+  allSheets.forEach(sheet => {
+    if (!sheet.isSheetHidden()) {
+      let name = sheet.getName();
+      if (name.includes(":")) {
+        let [category, task] = name.split(":").map(part => part.trim());
+        let sheetGID = sheet.getSheetId();
+        let sheetURL = `${SPREADSHEET.getUrl()}#gid=${sheetGID}`;
+        let taskInfo = { task: task, url: sheetURL };
+
+        if (!taskSheetData[category]) {
+          taskSheetData[category] = [];
+        }
+        taskSheetData[category].push(taskInfo);
+      }
+    }
+  });
+
+  return taskSheetData;
 }
