@@ -24,29 +24,30 @@ function updateIndexAndTaskSheets() {
 
     // Determine the starting index based on the last processed slide
     let startingIndex = currentDetails.lastSlideIndex + 1;
-    // console.log(`startingIndex is ${startingIndex}`);
+    console.log(`startingIndex is ${startingIndex}`);
 
     let pattern = /Category:\s*【(.*?)】\s*(.*?)Task:\s*(.*?)Summary:\s*(.*)/;
 
     for (let i = startingIndex; i < slides.length; i++) {
         // Simulate a delay to test the timeout functionality
         // For example, sleep for 10 seconds
-        // Utilities.sleep(20000); // Sleep for 20 seconds to test
+        // Utilities.sleep(5000); // Sleep for 5 seconds to test
         // Check the elapsed time
         let currentTime = new Date().getTime();
         let readableTime = new Date(currentTime).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', hour12: false });
-        // console.log(`Current time is ${readableTime} in Slide ${i + 1}.`);
+        console.log(`Current time is ${readableTime} in Slide ${i + 1}.`);
         if (currentTime - startTime >= maxExecutionTime) {
             // Save the current state and set a trigger if the script is approaching the time limit
             currentDetails.lastSlideIndex = i - 1; // Save the index of the last processed slide
             allDetails.push(currentDetails);
             SCRIPTPROPERTIES.setProperty(SCRIPT_PROPERTY_KEY_SAVED_DETAILS, JSON.stringify(allDetails));
             // Log timeout and set a trigger for a new execution
-            console.log(`Time out detected in Slide ${i + 1}, saving current details and setting a trigger.`);
             ScriptApp.newTrigger('updateIndexAndTaskSheets')
                      .timeBased()
-                     .after(10000) // Set the trigger to run 10 seconds after the current execution ends
+                     .after(5000) // Set the trigger to run 5 seconds after the current execution ends
                      .create();
+            console.log(`Time out detected in Slide ${i + 1}, saving current details and setting a trigger.`);
+            Browser.msgBox(`Still processing. Please wait a while.`);
             return; // Exit the function to allow the trigger to start a new execution
         }
         let slide = slides[i];
@@ -97,25 +98,23 @@ function updateIndexAndTaskSheets() {
         }
     }
 
-    //Check if all slides have been processed
-    if (startingIndex < slides.length) {
-      //Before pushing currentDetails into allDetails, delete all task sheets of the Spreadsheet
-      deleteAllTaskSheets_();
-
-      // Once we've finished processing all slides, push the final currentDetails to allDetails
-      if (currentDetails.workCategory !== null) {
-          allDetails.push(currentDetails);
-          // console.log(`allDetails are ${JSON.stringify(allDetails)}`);
-          inputSlidesInfoToSheet_(allDetails, SPREADSHEET);
-          // console.log(`allDetails are successfully input into Google Sheet: ${JSON.stringify(allDetails, null, 2)}`);
-          // Clear the saved data after successfully processing all slides
-          SCRIPTPROPERTIES.deleteProperty(SCRIPT_PROPERTY_KEY_SAVED_DETAILS);
-          // delete triggers to execute `updateIndexAndTaskSheets`
-          deleteSpecificTrigger_(`updateIndexAndTaskSheets`);
-      }
+    // Once we've finished processing all slides, push the final currentDetails to allDetails
+    if (currentDetails.workCategory !== null) {
+        //Before pushing currentDetails into allDetails, delete all task sheets of the Spreadsheet
+        deleteAllTaskSheets_();
+        
+        allDetails.push(currentDetails);
+        // console.log(`allDetails are ${JSON.stringify(allDetails)}`);
+        inputSlidesInfoToSheet_(allDetails, SPREADSHEET);
+        // console.log(`allDetails are successfully input into Google Sheet`);
+        // Clear the saved data after successfully processing all slides
+        SCRIPTPROPERTIES.deleteProperty(SCRIPT_PROPERTY_KEY_SAVED_DETAILS);
+        // delete triggers to execute `updateIndexAndTaskSheets`
+        deleteSpecificTrigger_(`updateIndexAndTaskSheets`);
+        updateIndexSheet_();
+        SpreadsheetApp.getUi().alert(`Index Sheet and Task Sheets have been updated.`);
     }
-  updateIndexSheet_();
-  Browser.msgBox(`Index Sheet and Task Sheets have been updated.`);
+  
 }
 
 /**
