@@ -24,9 +24,11 @@ function updateIndexAndTaskSheets() {
 
     // Determine the starting index based on the last processed slide
     let startingIndex = currentDetails.lastSlideIndex + 1;
-    console.log(`startingIndex is ${startingIndex}`);
+    // console.log(`startingIndex is ${startingIndex}`);
 
-    let pattern = /Category:\s*【(.*?)】\s*(.*?)Task:\s*(.*?)Summary:\s*(.*)/;
+    let patternCategory = /Category:\s*【(.*?)】\s*(.*?)(?=Task:|Summary:|$)/;
+    let patternTask = /Task:\s*(.*?)(?=Category:|Summary:|$)/;
+    let patternSummary = /Summary:\s*(.*?)(?=Category:|Task:|$)/;
 
     for (let i = startingIndex; i < slides.length; i++) {
         // Simulate a delay to test the timeout functionality
@@ -34,8 +36,8 @@ function updateIndexAndTaskSheets() {
         // Utilities.sleep(5000); // Sleep for 5 seconds to test
         // Check the elapsed time
         let currentTime = new Date().getTime();
-        let readableTime = new Date(currentTime).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', hour12: false });
-        console.log(`Current time is ${readableTime} in Slide ${i + 1}.`);
+        // let readableTime = new Date(currentTime).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', hour12: false });
+        // console.log(`Current time is ${readableTime} in Slide ${i + 1}.`);
         if (currentTime - startTime >= maxExecutionTime) {
             // Save the current state and set a trigger if the script is approaching the time limit
             currentDetails.lastSlideIndex = i - 1; // Save the index of the last processed slide
@@ -53,16 +55,21 @@ function updateIndexAndTaskSheets() {
         let slide = slides[i];
         let shapes = slide.getShapes();
         let entireSlideText = shapes.map(shape => shape.getText().asString().trim()).join(" ");
-        let match = entireSlideText.match(pattern);
+        // console.log(entireSlideText);
+        // Check if the entire slide text contains all three keywords
+        let matchCategory = entireSlideText.match(patternCategory);
+        let matchTask = entireSlideText.match(patternTask);
+        let matchSummary = entireSlideText.match(patternSummary);
 
-        // Check if the entire slide text matches the "Category:" pattern
-        if (match) {
+        if (matchCategory && matchTask && matchSummary) {
             // console.log(`Slide ${i + 1} is subject for extraction.`);
-            let slideUrl = presentation.getUrl() + '#slide=id.' + slide.getObjectId()
-            let slideDetails = extractSlideDetails_(match,slideUrl);
+            let slideUrl = presentation.getUrl() + '#slide=id.' + slide.getObjectId();
+            let workCategory = matchCategory[1].trim();
+            let subWorkCategory = matchCategory[2].trim();
+            let slideDetails = extractSlideDetails_(workCategory, subWorkCategory, matchTask[1], matchSummary[1], slideUrl);
 
-            // Check if the work category or sub-category has changed in the current slide
-            if (slideDetails.workCategory !== currentDetails.workCategory || slideDetails.subWorkCategory !== currentDetails.subWorkCategory) {
+            // Check if the combination of work category and sub-category has changed in the current slide
+            if (slideDetails.workCategory + slideDetails.subWorkCategory !== currentDetails.workCategory + currentDetails.subWorkCategory) {
               /*
               If the category or sub-category has changed, it means we've moved to a new category or sub-category.
               Therefore, push the currentDetails (which holds the accumulated data for the previous category or sub-category) to allDetails.
@@ -104,7 +111,6 @@ function updateIndexAndTaskSheets() {
         deleteAllTaskSheets_();
         
         allDetails.push(currentDetails);
-        // console.log(`allDetails are ${JSON.stringify(allDetails)}`);
         inputSlidesInfoToSheet_(allDetails, SPREADSHEET);
         // console.log(`allDetails are successfully input into Google Sheet`);
         // Clear the saved data after successfully processing all slides
@@ -118,38 +124,32 @@ function updateIndexAndTaskSheets() {
 }
 
 /**
- * Extracts slide details such as work category, sub-category, and tasks from a given text match.
- * This function processes the matched text from a Google Slide and extracts relevant details
- * to organize tasks into categories and sub-categories.
+ * Extracts slide details such as work category, sub-category, and tasks from provided parameters.
+ * This function organizes tasks into categories and sub-categories based on the text extracted from a Google Slide.
  *
- * @param {Array} match - An array containing matched strings from a regular expression, where:
- *                        match[1] is the work category,
- *                        match[2] is the sub-work category,
- *                        match[3] is the task name,
- *                        match[4] is the task summary.
+ * @param {string} workCategory - The work category extracted from the slide.
+ * @param {string} subWorkCategory - The sub-work category extracted from the slide.
+ * @param {string} task - The task name extracted from the slide.
+ * @param {string} summary - The task summary extracted from the slide.
  * @param {string} slideUrl - The URL of the slide from which the details are extracted.
- * @return {Object} An object containing the extracted slide details, including:
- *                  - workCategory: The category of the work extracted from the slide.
- *                  - subWorkCategory: The sub-category of the work extracted from the slide.
- *                  - tasks: An array of task objects, each with name, summary, and URL of the slide.
+ * @return {Object} An object containing the organized slide details, including:
+ *                  - workCategory: The category of the work.
+ *                  - subWorkCategory: The sub-category of the work.
+ *                  - tasks: An array of task objects, each with a name, summary, and URL of the slide.
  */
-function extractSlideDetails_(match,slideUrl) {
+function extractSlideDetails_(workCategory, subWorkCategory, task, summary, slideUrl) {
     let slideDetails = {
-        workCategory: null,
-        subWorkCategory: null,
+        workCategory: workCategory,
+        subWorkCategory: subWorkCategory,
         tasks: []
     };
 
-    if (match) {
-        slideDetails.workCategory = match[1].trim();
-        slideDetails.subWorkCategory = match[2].trim();
-        let currentTask = {
-            name: match[3].trim(),
-            summary: match[4].trim(),
-            url: slideUrl
-        };
-        slideDetails.tasks.push(currentTask);
-    }
+    let currentTask = {
+        name: task.trim(),
+        summary: summary.trim(),
+        url: slideUrl
+    };
+    slideDetails.tasks.push(currentTask);
 
     return slideDetails;
 }
