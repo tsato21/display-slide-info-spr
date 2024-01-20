@@ -1,0 +1,118 @@
+---
+layout: default
+---
+<div class="content">
+  <div class="language-switcher">
+    <a href="index.html" class="language-button" title="英語版に切替">
+      <img src="assets/images/america-flag.avif" alt="America" />
+      英語版に切替
+    </a>
+  </div>
+    <div class="container py-4">
+        <h1 id="top" class="mb-4">このプロジェクトについて</h1>
+        <p>このGoogle Apps Scriptプロジェクトは、Google Slideから特定の情報（カテゴリ名、サブカテゴリ名、タスク名、URL）を抽出し、それらをGoogleGoogle Sheetに整理することで、ワークフロー、特に業務マニュアル作成などの効率化を実現します。</p>
+        <ul>
+            <li>Google SheetとGoogle Slideとの同期。</li>
+            <li>スクリプト機能に簡単にアクセスするためのCustom Menu。</li>
+            <li>Google Slide情報に基づいてタスクシートを動的に更新。</li>
+        </ul>
+
+        <h2 id="prerequisites" class="mt-4">使用にあたって必要なこと</h2>
+        <ul>
+            <li>Google SheetとGoogle SlideにアクセスできるGoogleアカウント。</li>
+            <li>Google SheetsとGoogle Slidesに関する基本的な理解。</li>
+        </ul>
+
+        <h2 id="setup" class="mt-4">セットアップ</h2>
+        <ol>
+            <li>
+                <strong>Google Sheetにアクセス</strong>: <a href="https://docs.google.com/spreadsheets/d/1PMzgfemPZhTKBubqUDWp5gbM-veuWCbT0IKKOw3fsL8/edit#gid=0" target="_blank" rel="noopener noreferrer">サンプルGoogle Sheet</a> (参考: <a href="https://docs.google.com/presentation/d/1pUxDKtwHA4GMXfmGXmwzXnjuAbW9g6DE9lFTj55wAn8/edit#slide=id.g2aa00057ea4_0_0" target="_blank" rel="noopener noreferrer">サンプルGoogle Slide</a>)
+                <p> *注: サンプルGoogle Slideに記載されているカテゴリとタスクは、教育機関の作業マニュアルのための一例です。</p>
+            </li>
+            <li>
+                <strong>シートのコピー</strong>: Google Sheetのコピーを作成して、個人用のバージョンを作成します。
+            </li>
+            <li>
+                <strong>GAS認証</strong>: 「Custom Menu」 > 'その他'に移動し、「Conduct Authorization」ボタンをクリックして、Google Apps Scriptの認証プロセスを開始します。
+            </li>
+            <li>
+                <strong>元の形式に戻す</strong>: Google Sheetを元の形式にリセットします（目次シート以外のすべてのサンプルシートの削除、事前にセット情報のリセット、及び目次シートの内容を削除します）。「Custom Menu」 > 「設定」に移動し、「Delete All Sheets and Pre-Set Info」をクリックします。
+                <div class="row">
+                  <div class="col-12">
+                    <!-- 設定モーダル画像のプレースホルダー -->
+                    <figure class="resize-image my-3">
+                      <img src="assets/images/settings_modal_image.png" alt="設定モーダル" class="img-fluid" width="300" height="200">
+                      <figcaption>図: 設定画面</figcaption>
+                    </figure>
+                  </div>
+                </div>
+            </li>
+            <li>
+                <strong>Google SlideのURLと目次シートの名前を設定</strong>: 「Custom Menu」 > 「Setting」に移動し、「Set Necessary Info」をクリックして、Google SlideのURLとGoogleGoogle Sheetの目次シートの名前を指定します。
+            </li>
+            <li>
+                <strong>定数のカスタマイズ（任意）</strong>：Apps Scriptエディタを訪れて、`variables.gs`の定数をご自身の要件に合わせて変更します。(Google Apps Scriptでのカスタマイズを実施する場合のみ)
+                <div class="resize-image my-3 container-img">
+                    <!-- 定数のカスタマイズ画像のプレースホルダー -->
+                    <img src="assets/images/constants_image.png" alt="定数のカスタマイズ" width="300" height="200">
+                    <div class="image-caption">図: 変数のカスタマイズ</div>
+                </div>
+            </li>
+        </ol>
+
+        <section id="usage" class="mt-4">
+          <h2>プロジェクトの使用方法</h2>      
+          <ol>
+              <li>
+                  <p>ユーザーは特定のパターンに従って指定されたGoogle Slideにスライドを作成する必要があります。各セクションの最初のスライドは、以下の構造に従うべきです：</p>
+                  <blockquote>
+                      カテゴリ:【カテゴリ名】サブカテゴリ名<br>
+                      タスク: タスク名<br>
+                      概要: 概要の説明
+                  </blockquote>
+                  <div class="resize-image my-3 container-img">
+                      <img src="assets/images/slide-pattern.png" alt="スライドのパターン" width="300" height="200">
+                      <div class="image-caption">図: スライドの構造指定</div>
+                  </div>
+                  <p>この構造でスライドを作成することで、Scriptが「当該スライドをセクションの先頭スライド」と判断します。スクリプトは当該スライド情報とそのURLを保存し、その情報をGoogle Sheet上に詳細に表示します。</p>
+              </li>
+      
+              <li>
+                  <p><strong>目次シートとタスクシートの更新</strong>: 「Custom Menu」 > 「Update Index & Task Sheets」を実行します。この操作により、最新のスライドデータに基づいて目次シートと各タスクシートが自動的に更新されます。</p>
+                  <p>自動更新に関する以下の情報は<a href="https://docs.google.com/presentation/d/1xSyIpb7w24os4EEhpNBP5CCTxS70q5PeTGKm2Vndumw/edit#slide=id.g6f52a3fb7eed7995_31" target="_blank" rel="noopener noreferrer">こちら</a>で詳細に説明されています。(＊英語で記載)
+                  <ul>
+                      <li>各レベルでスライドデータを保存する変数</li>
+                      <li>スライドデータを抽出するロジック</li>
+                  </ul>
+                  </li>
+                  <div class="row">
+                      <div class="col-md-4">
+                          <figure class="resize-image my-3">
+                              <img src="assets/images/update-button.png" alt="更新ボタン" class="img-fluid">
+                              <figcaption>図: 更新ボタン</figcaption>
+                          </figure>
+                      </div>
+                      <div class="col-md-4">  
+                          <figure class="resize-image my-3">
+                              <img src="assets/images/index-sheet.png" alt="インデックスシートの更新" class="img-fluid">
+                              <figcaption>図: 目次シートの更新</figcaption>
+                          </figure>
+                      </div>
+                      <div class="col-md-4">
+                          <figure class="resize-image my-3">
+                              <img src="assets/images/task-sheet.png" alt="タスクシートの更新" class="img-fluid">
+                              <figcaption>図: タスクシートの更新</figcaption>
+                          </figure>
+                      </div>
+                  </div>
+              </li>
+          </ol>
+      </section>      
+        
+        <h2 id="others" class="mt-4">その他</h2>
+        <ul>
+            <li>コードを追加することで、レポート生成やデータ分析など、追加機能を探索することができます。</li>
+            <li>特定のワークフローや要件に合わせてスクリプトをカスタマイズすることも可能です。</li>
+        </ul>
+    </div>
+</div>

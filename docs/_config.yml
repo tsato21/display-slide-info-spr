@@ -1,4 +1,7 @@
 # Site settings
 theme: jekyll-theme-primer
-title: 'Automation of Manual List Creation'
+title: 'Automation of Slide and Sheet Integration'
 description: 'This project seamlessly integrate Google Sheets and Slides and can be efficiently used for listing work manual.'
+
+title_jpn: 'シートとスライドの自動連携'
+description_jpn: 'Googleスプレッドシートとスライドをシームレスに連携させ、仕事のマニュアル作成などの作業を効率化することができます。'

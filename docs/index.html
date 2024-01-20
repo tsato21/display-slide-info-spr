@@ -3,12 +3,17 @@ layout: default
 ---
 <div class="content">
     <div class="container py-4">
+      <div class="language-switcher">
+        <a href="index_jpn.html" class="language-button" title="Switch to Japanese">
+          <img src="assets/images/japan-flag.jpeg" alt="Japanese" />
+          Switch to Japanese Version
+        </a>
+      </div>
         <h1 id="top" class="mb-4">About this Project</h1>
-        <p>This Google Apps Script project streamlines your workflow by extracting key details (Category, Subcategory, Task, URLs) from Google Slides and neatly organizing them into a Google Spreadsheet, Streamlines your workflow by extracting key details (Category, Subcategory, Task, URLs) from Google Slides and neatly organizing them into a Google Spreadsheet, which enhances efficiency of creation of work manuals..</p>
+        <p>This Google Apps Script project streamlines your workflow by extracting specific information (Category, Subcategory, Task, URLs) from Google Slides and neatly organizing them into a Google Spreadsheet, Streamlines your workflow by extracting key details (Category, Subcategory, Task, URLs) from Google Slides and neatly organizing them into a Google Spreadsheet, which enhances efficiency of creation of work manuals.</p>
         <ul>
-            <li>Integration with Google Sheets and Google Slides.</li>
+            <li>Integration with Google Sheets and Google Slides and dynamic update of task sheets based on slide information..</li>
             <li>Custom menu for easy access to script functionalities.</li>
-            <li>Dynamic update of task sheets based on slide information.</li>
         </ul>
 
         <h2 id="prerequisites" class="mt-4">Prerequisites</h2>
@@ -28,10 +33,10 @@ layout: default
                 <strong>Copy the Sheet</strong>: Make a copy of the Google Sheet to create your personalized version.
             </li>
             <li>
-                <strong>GAS Authorization</strong>: Navigate to the 'Custom Menu' > 'Others' and click the 'Conduct Authorization' button to start the Google Apps Script authorization process.
+                <strong>GAS Authorization</strong>: Navigate to the 'Custom Menu' > Click 'Others' and click the 'Conduct Authorization' button to start the Google Apps Script authorization process.
             </li>
             <li>
-                <strong>Return to Original Format</strong>: Use this option to reset the spreadsheet to its original format (i.e., Delete all of the sample sheets except index sheet, reset all pre-defined info, and clear contents in index sheet). Navigate to 'Custom Menu' > 'Setting' and click 'Delete All Sheets and Pre-Set Info'.
+                <strong>Return to Original Format</strong>: Use this option to reset the spreadsheet to its original format (i.e., Delete all of the sample sheets except index sheet, reset all pre-defined info, and clear contents in index sheet). Navigate to 'Custom Menu' > Click 'Setting' and click 'Delete All Sheets and Pre-Set Info'.
                 <div class="row">
                   <div class="col-12">
                     <!-- Placeholder for Settings Modal Image -->
@@ -43,7 +48,7 @@ layout: default
                 </div>
             </li>
             <li>
-                <strong>Set Slide URL and Name of Index Sheet</strong>: Navigate to 'Custom Menu' > 'Setting' and click 'Set Necessary Info' designating URL of Google Slide and name of the index sheet of Google Spreadsheet.
+                <strong>Set Slide URL and Name of Index Sheet</strong>: Navigate to 'Custom Menu' > Click 'Setting' and click 'Set Necessary Info' designating URL of Google Slide and name of the index sheet of Google Spreadsheet.
             </li>
             <li>
                 <strong>Customize Constants (Optional)</strong>: Navigate to Apps Script edit page and modify constants in `variables.gs` to meet specific requirements.
@@ -57,8 +62,6 @@ layout: default
 
         <section id="usage" class="mt-4">
           <h2>Project Usage</h2>
-          <p>Our workflow is designed with user efficiency in mind. Here's how it works:</p>
-
           <ol>
             <li>
               <p>Users are required to create slides in a designated Google Slide following a specific pattern. The first slide of each section should adhere to the following structure:</p>
@@ -75,7 +78,7 @@ layout: default
             </li>
 
             <li>
-              <p><strong>Update Index & Task Sheets</strong>: Navigate to 'Custom Menu' > 'Update Index & Task Sheets'. This action automatically updates the index and task sheets based on the latest slide data.</p>
+              <p><strong>Update Index & Task Sheets</strong>: Navigate to 'Custom Menu' > Click 'Update Index & Task Sheets'. This action automatically updates the index and task sheets based on the latest slide data.</p>
               <p>The following information is explained in details in <a href="https://docs.google.com/presentation/d/1xSyIpb7w24os4EEhpNBP5CCTxS70q5PeTGKm2Vndumw/edit#slide=id.g6f52a3fb7eed7995_31" target="_blank" rel="noopener noreferrer">HERE</a>.
              <ul>
               <li>Variables to store slide data at each level</li>
