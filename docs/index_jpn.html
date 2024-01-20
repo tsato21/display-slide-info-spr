@@ -10,11 +10,10 @@ layout: default_jpn
   </div>
     <div class="container py-4">
         <h1 id="top" class="mb-4">このプロジェクトについて</h1>
-        <p>このGoogle Apps Scriptプロジェクトは、Google Slideから特定の情報（カテゴリ名、サブカテゴリ名、タスク名、URL）を抽出し、それらをGoogleGoogle Sheetに整理することで、ワークフロー、特に業務マニュアル作成などの効率化を実現します。</p>
+        <p>このGoogle Apps Scriptプロジェクトは、Google Slideから特定の情報（カテゴリ名、サブカテゴリ名、タスク名、URL）を抽出し、それらをGoogleGoogle Sheetに整理し表示することで、業務マニュアル作成などのワークフローの効率化を実現します。</p>
         <ul>
-            <li>Google SheetとGoogle Slideとの同期。</li>
-            <li>スクリプト機能に簡単にアクセスするためのCustom Menu。</li>
-            <li>Google Slide情報に基づいてタスクシートを動的に更新。</li>
+            <li>Google Slide情報に基づいてGoogle Sheetを自動更新</li>
+            <li>スクリプト機能に簡単にアクセスするためのCustom Menu</li>
         </ul>
 
         <h2 id="prerequisites" class="mt-4">使用にあたって必要なこと</h2>
@@ -33,7 +32,7 @@ layout: default_jpn
                 <strong>シートのコピー</strong>: Google Sheetのコピーを作成して、個人用のバージョンを作成します。
             </li>
             <li>
-                <strong>GAS認証</strong>: 「Custom Menu」 > 'その他'に移動し、「Conduct Authorization」ボタンをクリックして、Google Apps Scriptの認証プロセスを開始します。
+                <strong>GAS認証</strong>: 「Custom Menu」 > 「Others」>「Conduct Authorization」をクリックして、Google Apps Scriptの認証プロセスを開始します。
             </li>
             <li>
                 <strong>元の形式に戻す</strong>: Google Sheetを元の形式にリセットします（目次シート以外のすべてのサンプルシートの削除、事前にセット情報のリセット、及び目次シートの内容を削除します）。「Custom Menu」 > 「設定」に移動し、「Delete All Sheets and Pre-Set Info」をクリックします。
@@ -51,7 +50,7 @@ layout: default_jpn
                 <strong>Google SlideのURLと目次シートの名前を設定</strong>: 「Custom Menu」 > 「Setting」に移動し、「Set Necessary Info」をクリックして、Google SlideのURLとGoogleGoogle Sheetの目次シートの名前を指定します。
             </li>
             <li>
-                <strong>定数のカスタマイズ（任意）</strong>：Apps Scriptエディタにアクセスし、`variables.gs`の定数をご自身の要件に合わせて変更可能です。(Google Apps Scriptでのカスタマイズを実施する場合のみ)
+                <strong>変数のカスタマイズ（任意）</strong>：Apps Scriptエディタにアクセスし、`variables.gs`の変数をご自身の要件に合わせて変更可能です。(Google Apps Scriptでのカスタマイズを実施する場合のみ)
                 <div class="resize-image my-3 container-img">
                     <!-- 定数のカスタマイズ画像のプレースホルダー -->
                     <img src="assets/images/constants_image.png" alt="定数のカスタマイズ" width="300" height="200">
@@ -74,12 +73,12 @@ layout: default_jpn
                       <img src="assets/images/slide-pattern.png" alt="スライドのパターン" width="300" height="200">
                       <div class="image-caption">図: スライドの構造指定</div>
                   </div>
-                  <p>この構造でスライドを作成することで、Scriptが当該スライドを「セクションの先頭スライド」と判断します。スクリプトは当該スライド情報とそのURLを保存し、その情報をGoogle Sheet上に詳細に表示します。</p>
+                  <p>この構造でスライドを作成することで、Scriptが当該スライドを「セクションの先頭スライド」と認識します。そして当該スライド情報とそのURLを保存し、Google Sheet上に表示します。</p>
               </li>
       
               <li>
                   <p><strong>目次シートとタスクシートの更新</strong>: 「Custom Menu」 > 「Update Index & Task Sheets」を実行します。この操作により、最新のスライドデータに基づいて目次シートと各タスクシートが自動で更新されます。</p>
-                  <p>自動更新に関する以下の情報は<a href="https://docs.google.com/presentation/d/1xSyIpb7w24os4EEhpNBP5CCTxS70q5PeTGKm2Vndumw/edit#slide=id.g6f52a3fb7eed7995_31" target="_blank" rel="noopener noreferrer">こちら</a>で詳細に説明されています。(＊英語で記載)
+                  <p>＊自動更新に関する以下の情報は<a href="https://docs.google.com/presentation/d/1xSyIpb7w24os4EEhpNBP5CCTxS70q5PeTGKm2Vndumw/edit#slide=id.g6f52a3fb7eed7995_31" target="_blank" rel="noopener noreferrer">こちら</a>で詳細に説明されています。(＊英語で記載)
                   <ul>
                       <li>それぞれの段階でスライドデータを保存する変数</li>
                       <li>スライドデータを抽出するロジック</li>
