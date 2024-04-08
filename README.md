@@ -1,1 +1,1 @@
-# display-slide-info-spr
+# Manual Builder

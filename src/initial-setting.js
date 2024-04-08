@@ -9,13 +9,18 @@ function onOpen() {
     .addItem('Update Index & Task Sheets', 'updateIndexAndTaskSheets')
     .addSeparator()
     .addSubMenu(
-      ui.createMenu('Settings')
+      ui
+        .createMenu('Settings')
         .addItem('Set Necessary Info', 'accessSettingModal')
-        .addItem('Delete All Sheets and Pre-Set Info', 'deleteAllExceptFirstAndClearProperties')
+        .addItem(
+          'Delete All Sheets and Pre-Set Info',
+          'deleteAllExceptFirstAndClearProperties'
+        )
     )
     .addSeparator()
     .addSubMenu(
-      ui.createMenu('Others')
+      ui
+        .createMenu('Others')
         .addItem('Conduct Authorization', 'showAuthorization')
     )
     .addToUi();
@@ -25,7 +30,7 @@ function onOpen() {
  * Performs authorization tasks for Google Spreadsheet and Google Slides services.
  * This function is designed to be triggered by a menu item.
  */
-function showAuthorization(){
+function showAuthorization() {
   SpreadsheetApp;
   SlidesApp;
   ScriptApp;
@@ -37,14 +42,11 @@ function showAuthorization(){
  * This dialog allows the user to set necessary information for the spreadsheet's operation.
  */
 function accessSettingModal() {
-    // Create a template from the HTML file
-    let htmlTemplate = HtmlService.createTemplateFromFile('show-setting');
-    
-    let html = htmlTemplate
-        .evaluate()
-        .setWidth(1200)
-        .setHeight(350);
-    SpreadsheetApp.getUi().showModalDialog(html, 'Set Necessary Info');
+  // Create a template from the HTML file
+  let htmlTemplate = HtmlService.createTemplateFromFile('show-setting');
+
+  let html = htmlTemplate.evaluate().setWidth(1200).setHeight(350);
+  SpreadsheetApp.getUi().showModalDialog(html, 'Set Necessary Info');
 }
 
 /**
@@ -54,7 +56,9 @@ function accessSettingModal() {
 function getSettings() {
   return {
     slideUrl: SCRIPTPROPERTIES.getProperty(SCRIPT_PROPERTY_KEY_SLIDE_URL),
-    indexSheetName: JSON.parse(SCRIPTPROPERTIES.getProperty(SCRIPT_PROPERTY_KEY_INDEX_SHEET) || '{}').name
+    indexSheetName: JSON.parse(
+      SCRIPTPROPERTIES.getProperty(SCRIPT_PROPERTY_KEY_INDEX_SHEET) || '{}'
+    ).name,
   };
 }
 
@@ -71,7 +75,7 @@ function getSettings() {
 function setSettings(slideUrl, indexSheetName) {
   let sheet;
   if (slideUrl) {
-    if(!SlidesApp.openByUrl(slideUrl)){
+    if (!SlidesApp.openByUrl(slideUrl)) {
       throw new Error(`URL not exits`);
     }
   } else {
@@ -81,7 +85,7 @@ function setSettings(slideUrl, indexSheetName) {
   if (indexSheetName) {
     sheet = SPREADSHEET.getSheetByName(indexSheetName);
     if (!sheet) {
-        throw new Error(`Sheet with the name not exits`);
+      throw new Error(`Sheet with the name not exits`);
     }
   } else {
     throw new Error(`Index Sheet Name not input`);
@@ -92,7 +96,10 @@ function setSettings(slideUrl, indexSheetName) {
   let spreadSheetId = extractIDFromUrl_(spreadsheetUrl);
   let sheetUrl = `https://docs.google.com/spreadsheets/d/${spreadSheetId}/edit#gid=${sheetId}`;
   let indexSheetData = { name: indexSheetName, url: sheetUrl };
-  SCRIPTPROPERTIES.setProperty(SCRIPT_PROPERTY_KEY_INDEX_SHEET, JSON.stringify(indexSheetData));
+  SCRIPTPROPERTIES.setProperty(
+    SCRIPT_PROPERTY_KEY_INDEX_SHEET,
+    JSON.stringify(indexSheetData)
+  );
 
   Browser.msgBox(`Settings were completed.`);
 }
@@ -120,23 +127,24 @@ function extractIDFromUrl_(url) {
   return match ? match[1] : null;
 }
 
-
 /**
  * Deletes all sheets in the spreadsheet except the first one and clears all script properties.
  * Intended for resetting the spreadsheet to its initial state.
  */
 function deleteAllExceptFirstAndClearProperties() {
   var sheets = SPREADSHEET.getSheets();
-  
+
   sheets[0].clear();
   // Loop through all sheets except the first sheet and delete sheets
-  for (var i =1; i< sheets.length; i++) {
-      SPREADSHEET.deleteSheet(sheets[i]);
+  for (var i = 1; i < sheets.length; i++) {
+    SPREADSHEET.deleteSheet(sheets[i]);
   }
-  
+
   SCRIPTPROPERTIES.deleteAllProperties();
 
-  Browser.msgBox(`All sheets (excep the first one) were deleted and all pre-set information was reset.`);
+  Browser.msgBox(
+    `All sheets (excep the first one) were deleted and all pre-set information was reset.`
+  );
 }
 
 /*

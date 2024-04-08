@@ -1,184 +1,207 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>Settings Display</title>
-    <base target="_top">
+    <base target="_top" />
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            padding: 20px;
-        }
-        .category-title {
-            font-size: 24px;
-            margin-top: 20px;
-            margin-bottom: 10px;
-            font-weight: bold;
-            color: #333;
-            text-align: center;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            background-color: white;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        th, td {
-            padding: 5px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #d3d3d3; /* Light gray color */
-            color: black; /* Black text color for better contrast on light gray */
-            font-size: 18px;
-        }
-        td {
-            font-size: 16px;
-        }
-        .type-cell {
-            width: 20%; /* Adjusted width */
-        }
-        .description-cell {
-            width: 30%; /* Adjusted width for balance */
-        }
-        button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            color: white;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-            margin-bottom: 5px;
-        }
-        input[type="text"] {
-            width: calc(100% - 24px);
-            padding: 5px;
-            margin: 5px 0;
-            box-sizing: border-box;
-            border: 2px solid #ccc;
-            border-radius: 4px;
-        }
-        .current-info-cell {
-            width: 20%; /* New width for the current information column */
-        }
-        
-        /* Button styles */
-        .set-button {
-            background-color: #90ee90; /* Light green */
-            /* Other styles */
-        }
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        padding: 20px;
+      }
+      .category-title {
+        font-size: 24px;
+        margin-top: 20px;
+        margin-bottom: 10px;
+        font-weight: bold;
+        color: #333;
+        text-align: center;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+        background-color: white;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      th,
+      td {
+        padding: 5px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+      th {
+        background-color: #d3d3d3; /* Light gray color */
+        color: black; /* Black text color for better contrast on light gray */
+        font-size: 18px;
+      }
+      td {
+        font-size: 16px;
+      }
+      .type-cell {
+        width: 20%; /* Adjusted width */
+      }
+      .description-cell {
+        width: 30%; /* Adjusted width for balance */
+      }
+      button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        color: white;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
+        margin-bottom: 5px;
+      }
+      input[type='text'] {
+        width: calc(100% - 24px);
+        padding: 5px;
+        margin: 5px 0;
+        box-sizing: border-box;
+        border: 2px solid #ccc;
+        border-radius: 4px;
+      }
+      .current-info-cell {
+        width: 20%; /* New width for the current information column */
+      }
 
-        .set-button:hover {
-            background-color: #76c376; /* Darker shade of light green for hover */
-        }
+      /* Button styles */
+      .set-button {
+        background-color: #90ee90; /* Light green */
+        /* Other styles */
+      }
 
-        .update-button {
-            background-color: #ffeb3b; /* Yellow */
-            /* Other styles */
-        }
+      .set-button:hover {
+        background-color: #76c376; /* Darker shade of light green for hover */
+      }
 
-        .update-button:hover {
-            background-color: #e0c32e; /* Darker shade of yellow for hover */
-        }
+      .update-button {
+        background-color: #ffeb3b; /* Yellow */
+        /* Other styles */
+      }
 
-        .delete-button {
-            background-color: #f44336; /* Red */
-            /* Other styles */
-        }
+      .update-button:hover {
+        background-color: #e0c32e; /* Darker shade of yellow for hover */
+      }
 
-        .delete-button:hover {
-            background-color: #cc372c; /* Darker shade of red for hover */
-        }
+      .delete-button {
+        background-color: #f44336; /* Red */
+        /* Other styles */
+      }
+
+      .delete-button:hover {
+        background-color: #cc372c; /* Darker shade of red for hover */
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="category-title">Google Slides and Spreadsheet Settings</div>
     <table>
-        <tr>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Current Information</th>
-        </tr>
-        <tr>
-            <td class="type-cell">Google Slide URL</td>
-            <td class="description-cell">Enter the URL of the Google Slide to be used.</td>
-            <td class="current-info-cell">
-                <input type="text" id="slideUrl" placeholder="Enter Slide URL">
-            </td>
-        </tr>
-        <tr>
-            <td class="type-cell">Index Sheet Name</td>
-            <td class="description-cell">Enter the name of the Index Sheet in your Google Spreadsheet.</td>
-            <td class="current-info-cell">
-                <input type="text" id="indexSheetName" placeholder="Enter Index Sheet Name">
-            </td>
-        </tr>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Current Information</th>
+      </tr>
+      <tr>
+        <td class="type-cell">Google Slide URL</td>
+        <td class="description-cell">
+          Enter the URL of the Google Slide to be used.
+        </td>
+        <td class="current-info-cell">
+          <input type="text" id="slideUrl" placeholder="Enter Slide URL" />
+        </td>
+      </tr>
+      <tr>
+        <td class="type-cell">Index Sheet Name</td>
+        <td class="description-cell">
+          Enter the name of the Index Sheet in your Google Spreadsheet.
+        </td>
+        <td class="current-info-cell">
+          <input
+            type="text"
+            id="indexSheetName"
+            placeholder="Enter Index Sheet Name"
+          />
+        </td>
+      </tr>
     </table>
 
     <!-- Single button for settings, aligned to the left -->
-    <div style="text-align: right; margin-top: 10px;">
-        <button id="applySettingsButton" onclick="applySettings()"></button>
-        <button id="deleteSettingsButton" class="delete-button" style="display: none;" onclick="deleteSettings()">Delete</button>
+    <div style="text-align: right; margin-top: 10px">
+      <button id="applySettingsButton" onclick="applySettings()"></button>
+      <button
+        id="deleteSettingsButton"
+        class="delete-button"
+        style="display: none"
+        onclick="deleteSettings()"
+      >
+        Delete
+      </button>
     </div>
 
     <script>
-        window.onload = function() {
-            google.script.run.withSuccessHandler(initializeFields).getSettings();
-        };
+      window.onload = function () {
+        google.script.run.withSuccessHandler(initializeFields).getSettings();
+      };
 
-        function initializeFields(settings) {
-            // ... Existing code for initializeFields ...
-            updateDeleteButtonVisibility(settings.slideUrl, settings.indexSheetName);
-            updateInputAndButton(settings.slideUrl, settings.indexSheetName);
+      function initializeFields(settings) {
+        // ... Existing code for initializeFields ...
+        updateDeleteButtonVisibility(
+          settings.slideUrl,
+          settings.indexSheetName
+        );
+        updateInputAndButton(settings.slideUrl, settings.indexSheetName);
+      }
+
+      function updateInputAndButton(slideUrl, indexSheetName) {
+        const button = document.getElementById('applySettingsButton');
+        const slideInput = document.getElementById('slideUrl');
+        const indexShNameInput = document.getElementById('indexSheetName');
+
+        if (slideUrl && indexSheetName) {
+          button.textContent = 'Update Settings';
+          button.className = 'update-button';
+          slideInput.value = slideUrl;
+          indexShNameInput.value = indexSheetName;
+        } else {
+          button.textContent = 'Set Settings';
+          button.className = 'set-button';
         }
+      }
 
-        function updateInputAndButton(slideUrl, indexSheetName) {
-            const button = document.getElementById('applySettingsButton');
-            const slideInput = document.getElementById('slideUrl');
-            const indexShNameInput = document.getElementById('indexSheetName');
-
-            if (slideUrl && indexSheetName) {
-                button.textContent = 'Update Settings';
-                button.className = 'update-button';
-                slideInput.value = slideUrl;
-                indexShNameInput.value = indexSheetName
-            } else {
-                button.textContent = 'Set Settings';
-                button.className = 'set-button';
-            }
+      function updateDeleteButtonVisibility(slideUrl, indexSheetName) {
+        const deleteButton = document.getElementById('deleteSettingsButton');
+        if (slideUrl && indexSheetName) {
+          deleteButton.style.display = 'inline-block';
+        } else {
+          deleteButton.style.display = 'none';
         }
+      }
 
-        function updateDeleteButtonVisibility(slideUrl, indexSheetName) {
-            const deleteButton = document.getElementById('deleteSettingsButton');
-            if (slideUrl && indexSheetName) {
-                deleteButton.style.display = 'inline-block';
-            } else {
-                deleteButton.style.display = 'none';
-            }
-        }
+      function deleteSettings() {
+        google.script.run
+          .withSuccessHandler(closeDialog)
+          .withFailureHandler(function (error) {
+            alert('Error: ' + error.message);
+          })
+          .deleteSettings();
+      }
 
-        function deleteSettings() {
-            google.script.run.withSuccessHandler(closeDialog).withFailureHandler(function(error) {
-                alert('Error: ' + error.message);
-            })
-            .deleteSettings();
-        }
+      function applySettings() {
+        const slideUrl = document.getElementById('slideUrl').value;
+        const indexSheetName = document.getElementById('indexSheetName').value;
+        google.script.run
+          .withSuccessHandler(closeDialog)
+          .withFailureHandler(function (error) {
+            alert('Error: ' + error.message);
+          })
+          .setSettings(slideUrl, indexSheetName);
+      }
 
-        function applySettings() {
-            const slideUrl = document.getElementById('slideUrl').value;
-            const indexSheetName = document.getElementById('indexSheetName').value;
-            google.script.run.withSuccessHandler(closeDialog)
-                             .withFailureHandler(function(error) {
-                                alert('Error: ' + error.message);
-                             }).setSettings(slideUrl, indexSheetName);
-        }
-
-        function closeDialog() {
-            google.script.host.close();
-        }
+      function closeDialog() {
+        google.script.host.close();
+      }
     </script>
-</body>
+  </body>
 </html>
