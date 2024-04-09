@@ -16,7 +16,7 @@
   "author": "tsato21",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/tsato21/manual-builder/issues"
+    "url": "git+https://github.com/tsato21/manual-builder/issues"
   },
   "homepage": "https://tsato21.github.io/scripts-showcase/gas-tools/manual-builder/manual-builder.en",
   "devDependencies": {
