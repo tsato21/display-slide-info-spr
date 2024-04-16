@@ -18,7 +18,7 @@
   "bugs": {
     "url": "git+https://github.com/tsato21/manual-builder/issues"
   },
-  "homepage": "https://tsato21.github.io/scripts-showcase/gas-tools/manual-builder/manual-builder.en",
+  "homepage": "https://tsato21.github.io/gas-tools/manual-builder/manual-builder.en",
   "devDependencies": {
     "@google/clasp": "^2.4.2",
     "@types/google-apps-script": "^1.0.64",
